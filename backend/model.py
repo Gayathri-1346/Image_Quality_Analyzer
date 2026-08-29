@@ -239,48 +239,40 @@ def predict_quality(model,feature_values):
         zip(model.classes_, probabilities)
     )
     return prediction, probability_map
+
 def create_degraded_image(image, kind):
-
     result = image.copy()
-
     if kind == "blur":
         result = cv2.GaussianBlur(
             result,
             (15, 15),
             0
         )
-
     elif kind == "dark":
         result = (
             result.astype(np.float32) * 0.4
         ).astype(np.uint8)
-
     elif kind == "bright":
         result = cv2.convertScaleAbs(
             result,
             alpha=1.5,
             beta=40
         )
-
     elif kind == "noise":
         noise = np.random.normal(
             0,
             25,
             result.shape
         )
-
         result = result.astype(
             np.float32
         ) + noise
-
         result = np.clip(
             result,
             0,
             255
         ).astype(np.uint8)
-
     elif kind == "severe":
-
         result = cv2.GaussianBlur(
             result,
             (21, 21),
@@ -302,227 +294,143 @@ def create_degraded_image(image, kind):
             0,
             255
         ).astype(np.uint8)
-
     return result
 
 
-def train_quality_model(
-    train_folder="data/seg_train"
-):
-
+def train_quality_model(train_folder="data/seg_train"):
     autoencoder, device = load_autoencoder()
-
     X = []
     y = []
-
     files = []
-
-    for root, folders, filenames in os.walk(
-        train_folder
-    ):
-
+    for root, folders, filenames in os.walk(train_folder):
         for filename in filenames:
-
-            if filename.lower().endswith(
-                (".jpg", ".jpeg", ".png", ".bmp")
-            ):
+            if filename.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
                 files.append(
                     os.path.join(
                         root,
                         filename
                     )
                 )
-
     files = files[:2000]
-
     print(
         "Training images:",
         len(files)
     )
 
     for count, path in enumerate(files):
-
         image = cv2.imread(path)
-
         if image is None:
             continue
-
         # Original image
         features = extract_features(image)
-
         error = reconstruction_error(
             autoencoder,
             image,
             device
         )
-
         features["reconstruction_error"] = error
-
         X.append([
             features[name]
             for name in FEATURE_NAMES
         ])
-
         y.append("ACCEPTABLE")
-
         # Create degraded versions
-        for kind in [
-            "blur",
-            "dark",
-            "bright",
-            "noise",
-            "severe"
-        ]:
-
+        for kind in ["blur","dark","bright","noise","severe"]:
             bad_image = create_degraded_image(
                 image,
                 kind
             )
-
             features = extract_features(
                 bad_image
             )
-
             error = reconstruction_error(
                 autoencoder,
                 bad_image,
                 device
             )
-
             features["reconstruction_error"] = error
-
             X.append([
                 features[name]
                 for name in FEATURE_NAMES
             ])
-
             if kind == "severe":
                 y.append("DEFECTIVE")
             else:
                 y.append("DEGRADED")
-
         if (count + 1) % 100 == 0:
             print(
                 "Processed:",
                 count + 1
             )
-
     X = np.array(X)
     y = np.array(y)
-
-    print(
-        "Training samples:",
-        len(X)
-    )
-
+    print("Training samples:",len(X))
     train_fusion_model(X, y)
-
     print("Quality model training completed.")
-def evaluate_quality_model(
-    test_folder="data/seg_test"
-):
 
+def evaluate_quality_model(test_folder="data/seg_test"):
     autoencoder, device = load_autoencoder()
     model = load_fusion_model()
-
     X_test = []
     y_test = []
-
     files = []
-
     for root, folders, filenames in os.walk(test_folder):
-
         for filename in filenames:
-
-            if filename.lower().endswith(
-                (".jpg", ".jpeg", ".png", ".bmp")
-            ):
-                files.append(
-                    os.path.join(root, filename)
-                )
-
+            if filename.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
+                files.append(os.path.join(root, filename))
     # Keep evaluation time manageable
     files = files[:500]
-
     print("Test images:", len(files))
-
     for count, path in enumerate(files):
-
         image = cv2.imread(path)
-
         if image is None:
             continue
-
         # Test clean image
         features = extract_features(image)
-
         error = reconstruction_error(
             autoencoder,
             image,
             device
         )
-
         features["reconstruction_error"] = error
-
         X_test.append([
             features[name]
             for name in FEATURE_NAMES
         ])
-
         y_test.append("ACCEPTABLE")
-
         # Test degraded images
-        for kind in [
-            "blur",
-            "dark",
-            "bright",
-            "noise",
-            "severe"
-        ]:
+        for kind in ["blur","dark","bright","noise","severe"]:
 
             bad_image = create_degraded_image(
                 image,
                 kind
             )
-
             features = extract_features(
                 bad_image
             )
-
             error = reconstruction_error(
                 autoencoder,
                 bad_image,
                 device
             )
-
             features["reconstruction_error"] = error
-
             X_test.append([
                 features[name]
                 for name in FEATURE_NAMES
             ])
-
             if kind == "severe":
                 y_test.append("DEFECTIVE")
             else:
                 y_test.append("DEGRADED")
-
         if (count + 1) % 100 == 0:
-            print(
-                "Tested:",
-                count + 1
-            )
-
+            print("Tested:",count + 1)
     X_test = np.array(X_test)
     y_test = np.array(y_test)
-
     predictions = model.predict(X_test)
-
     accuracy = accuracy_score(
         y_test,
         predictions
     )
-
     precision = precision_score(
         y_test,
         predictions,
@@ -555,31 +463,12 @@ def evaluate_quality_model(
     )
 
     print("\nEvaluation Results")
-    print("------------------")
-
-    print(
-        "Accuracy:",
-        round(accuracy, 4)
-    )
-
-    print(
-        "Macro Precision:",
-        round(precision, 4)
-    )
-
-    print(
-        "Macro Recall:",
-        round(recall, 4)
-    )
-
-    print(
-        "Macro F1:",
-        round(f1, 4)
-    )
-
+    print("Accuracy:",round(accuracy, 4))
+    print("Macro Precision:",round(precision, 4))
+    print("Macro Recall:",round(recall, 4))
+    print("Macro F1:",round(f1, 4))
     print("\nConfusion Matrix:")
     print(matrix)
-
     return {
         "accuracy": accuracy,
         "precision": precision,

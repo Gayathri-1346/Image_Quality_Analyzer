@@ -2,12 +2,13 @@ import io
 import json
 import sqlite3
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
 from PIL import Image
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from features import extract_features
-from model import (
+from backend.features import extract_features
+from backend.model import (
     load_autoencoder,
     load_fusion_model,
     reconstruction_error,
@@ -15,9 +16,19 @@ from model import (
 )
 
 app = FastAPI(title="Image Quality Assessment")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # SQLite database
 db = sqlite3.connect(
-    "image_quality.db",
+    "data/image_quality.db",
     check_same_thread=False
 )
 db.execute("""
@@ -46,7 +57,12 @@ def home():
     return {
         "message": "Image Quality Assessment API"
     }
-
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "models_ready": models_ready
+    }
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
 
