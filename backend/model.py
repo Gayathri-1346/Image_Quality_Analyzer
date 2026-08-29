@@ -41,9 +41,12 @@ class ImageAutoencoder(nn.Module):
 class ImageDataset(Dataset):
     def __init__(self, folder):
         self.files = []
-        for filename in os.listdir(folder):
-            if filename.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
-                self.files.append(os.path.join(folder, filename))
+        for root, folders, files in os.walk(folder):
+            for filename in files:
+                if filename.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
+                    self.files.append(
+                        os.path.join(root, filename)
+                    )
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((128, 128)),
