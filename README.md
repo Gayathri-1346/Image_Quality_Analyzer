@@ -1000,7 +1000,34 @@ Possible improvements include:
 - Deploying the application to a cloud platform
 
 ---
+## Sample Images
 
+The following sample images demonstrate different image-quality conditions used by the system.
+
+| Sample | Condition | Expected Quality |
+|---|---|---|
+| acceptable.jpg | Clear/original image | ACCEPTABLE |
+| blurred.jpg | Blurred image | DEGRADED |
+| dark.jpg | Underexposed image | DEGRADED |
+| noisy.jpg | Noisy image | DEGRADED |
+| defective.jpg | Severe degradation | DEFECTIVE |
+
+### Samples
+
+#### ACCEPTABLE
+![Acceptable Image](samples/acceptable.jpg)
+
+#### DEGRADED - Blur
+![Blurred Image](samples/blurred.jpg)
+
+#### DEGRADED - Dark
+![Dark Image](samples/dark.jpg)
+
+#### DEGRADED - Noise
+![Noisy Image](samples/noisy.jpg)
+
+#### DEFECTIVE
+![Defective Image](samples/defective.jpg)
 # 26. Conclusion
 
 This project combines traditional computer vision, deep learning, and machine learning to create an end-to-end Image Quality Assessment system.
