@@ -1,41 +1,90 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# Virtual environments
 .venv/
 venv/
 env/
-
-# Environment variables / secrets
-.env
-
-# Jupyter
-.ipynb_checkpoints/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+ENV/
 
 # Python packaging
 *.egg-info/
 dist/
 build/
+.pytest_cache/
+.mypy_cache/
 
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
 # Logs
+# =========================
 *.log
 
+# =========================
+# Node / React
+# =========================
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Build / Cache
+# =========================
+*.cache
+.cache/
+
+# =========================
+# Datasets
+# =========================
+data/
+datasets/
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# =========================
 # Large ML files
+# =========================
 *.pt
-*.pth
 *.ckpt
 *.safetensors
 
-# Datasets
-data/
-datasets/
+# Keep the trained Autoencoder model
+!models/
+!models/autoencoder.pth
+!models/quality_classifier.pkl
