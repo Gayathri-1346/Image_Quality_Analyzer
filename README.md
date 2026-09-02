@@ -726,13 +726,13 @@ docker compose version
 Clone the repository:
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/Gayathri-1346/Image_Quality_Analyzer/
 ```
 
 Move into the project directory:
 
 ```bash
-cd IITH_prototype
+cd Image_Quality_Analyzer
 ```
 
 ---
